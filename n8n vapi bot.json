@@ -1,0 +1,148 @@
+{
+  "name": "n8n vapi bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "6e177efb-96c1-4240-9f4f-18a2dc52f1c0",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        -140
+      ],
+      "id": "43f829eb-9746-4109-915d-d361e2490bec",
+      "name": "Webhook",
+      "webhookId": "6e177efb-96c1-4240-9f4f-18a2dc52f1c0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Find the weather for {{ $json.body.message.toolCalls[0].function.arguments.place }}\nOnly output one sentence, no newlines.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        -140
+      ],
+      "id": "ab704189-bfb3-428f-8bca-5a16ca528393",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        60,
+        60
+      ],
+      "id": "5492b380-b412-40d2-b2a9-17cadce3a09e",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "W1eJvtIEMCIXkEKv",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n    \"results\": [\n        {\n            \"toolCallId\": \"{{ $('Webhook').item.json.body.message.toolCalls[0].id }}\",\n            \"result\": \"{{ $json.output }}\"\n        }\n    ]\n}\n\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        240,
+        -140
+      ],
+      "id": "e5a26d5b-f6bd-4fa3-a238-67acbc9792e1",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        60
+      ],
+      "id": "fce905d9-c3b5-4ad8-bc94-a8376e83ced3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RzPbCZ3IyuKYwmEC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7bee4a30-c308-4379-9a5c-bebf1c984daf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "281cfbc1a6b11ae40109c9c69e61b7f9f49a558fd0b5cc016514a800c80658f6"
+  },
+  "id": "mJIIUzq3n356mksR",
+  "tags": []
+}
